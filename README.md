@@ -11,6 +11,3 @@ Each weekly file will contian the following subfolders
 * output - graphs, datatable, images extracted from data analysis using 
 
 --------
-A reminder for R: 
-
-![just keep swimming](http://draggingscars.tumblr.com/post/81537197051/i-just-watched-finding-nemo-gods-ya-gottta-love)
