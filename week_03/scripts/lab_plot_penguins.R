@@ -56,5 +56,8 @@ ggplot(penguins %>% na.omit,
   scale_fill_manual(values = cal_palette("bigsur"))+
   facet_grid(species ~ sex )
 
+ggsave(here("Week_03","output","penguin_mass_density.png"),
+       width = 11, height = 9)
+
 
 
