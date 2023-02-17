@@ -23,7 +23,7 @@ pivot_longer(cols = 9:16,
                values_to = "value") %>% 
   group_by(variable,Site) %>% 
   summarize(variable_mean = mean(value, na.rm = TRUE)) %>% 
-  write_csv(here("week_04", "output", "lab_summary.csv"))
+  write_csv(here("week_04", "output", "summary_hw.csv"))
 chemclean
 
 #plot data
