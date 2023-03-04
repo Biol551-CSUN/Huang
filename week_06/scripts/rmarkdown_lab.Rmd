@@ -1,0 +1,51 @@
+---
+title: "Rmarkdown_lab"
+author: "Jonathan Huang"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true 
+    toc_float: true
+    theme: darkly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Introduction
+
+Today we are going to work with the penguin data to learn *RMarkdown*
+
+## Load Libraries
+
+```{r}
+library(tidyverse)
+library(here)
+library(palmerpenguins)
+```
+
+## Inspect the data
+
+```{r}
+glimpse(penguins) #look at the penguin data
+```
+
+## Make a plot
+
+Plot the penguin data with bill length by bill depth. 
+
+```{r}
+penguins %>%  #using penguins data set
+  ggplot(aes(x = bill_length_mm,
+             y = bill_depth_mm,
+             color = species))+
+  geom_point()+
+  geom_smooth(method = "lm")+ #add linear regression
+  labs(x ="Bill length (mm)",
+       y = "Bill depth (mm)",
+       color = "Species")+
+  theme_bw()
+```
