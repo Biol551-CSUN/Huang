@@ -13,7 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE,  #display code?
                       message = FALSE, #display messages?
                       warning = FALSE, #display 
-                      fig.path = "../output") #HELP edit file path to save in output folder
+                      fig.path = "../output/") #HELP edit file path to save in output folder
 ```
 ## Install Libraries
 ```{r, echo= TRUE}
@@ -35,8 +35,10 @@ glimpse(penguins)
 ## Making Tables in Markdown
 
 ### Summary table
-```{r print.table.pdf, echo=TRUE}
+```{r print.table, echo=TRUE}
 penguins %>% 
+    mutate(year = as_factor(year), #make factor 
+         body_mass_g= as.numeric(body_mass_g)) %>%  # make numeric
   drop_na() %>%   #drop NAs
   group_by(year, sex) %>% #group by to summarize
   summarise("Bill Length(mm)" = mean(bill_length_mm, na.rm = TRUE),
@@ -44,7 +46,7 @@ penguins %>%
   kbl() %>%  # make it a kable table
   kable_classic()%>% #change table style
   row_spec(c(2,4,6), bold = T, color = "black", background = "lightblue") %>%  #edit row and text color 
-  kable_styling(full_width = FALSE) # make table only as long as needed
+  kable_styling(full_width = FALSE)  # make table only as long as needed
 
   
 ```
