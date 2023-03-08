@@ -1,0 +1,84 @@
+---
+title: "Maps_lab"
+author: "Jonathan Huang"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true 
+    toc_float: true
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,  #display code?
+                      message = FALSE, #display messages?
+                      warning = FALSE, #display 
+                      fig.path = "../output/")
+```
+
+#INTRODUCTION
+Computer Modeling Class working with and practicing with statial datasets for mapping. Dataset used is the Plastic Pollution dataset from *TidyTuesday*  
+
+# Load Library
+```{r}
+library(tidyverse)
+library(here)
+library(ggnewscale)
+library(tidytuesdayR)
+library(maps)
+library(mapdata)
+library(mapproj)
+```
+
+#Upload data 
+```{r}
+#download tidytuesday data
+tuesdata <- tidytuesdayR::tt_load('2021-01-26')
+tuesdata <- tidytuesdayR::tt_load(2021, week = 5)
+
+plastics <- tuesdata$plastics
+glimpse(plastics)
+
+#create a map dataset
+world <- map_data("world")
+
+```
+#Graphing
+##Clean Data
+```{r}
+plastics_tot <- plastics %>% 
+  filter(parent_company %in% "Grand Total") %>% 
+  mutate(plastic_effort = grand_total/volunteers)  #see how many plastics each volunteer picks up, called "effort"
+
+setdiff(plastics_tot$country,world$region) #Identify country names that are different
+
+#Join plastics_tot to lat/long info
+effort <- plastics_tot %>% 
+  mutate(country = case_when(country == "Cote D_ivoire"~"Ivory Coast", #Replace plastics country name to match world country name
+                             country == "ECUADOR" ~ "Ecuador",
+                             country == "NIGERIA" ~ "Nigeria",
+                             country == "Taiwan_ Republic of China (ROC)" ~ "Taiwan",
+                             country == "United Kingdom" ~ "UK",
+                             country == "United States of America" ~"USA",
+TRUE ~as.character(plastics_tot$country))) %>%  #this last line in case_when puts the values not specified back with countries not mentioned
+  select("region" = country, plastic_effort) %>%  #select columns
+  inner_join(world) #merge based on plastic countries 
+```
+
+```{r plasticeffort_lab.pdf,}
+ggplot()+
+  geom_polygon(world,mapping = aes(x= long,  #make base map
+                             y = lat, 
+                             group = group))+
+  geom_polygon(effort, mapping = aes(x = long, #add layer of data of effort per country
+                                     y = lat,
+                                     group = group,
+                                     fill = plastic_effort))+
+  labs(fill = "Plastic per Effort")+ #change legend title
+  scale_fill_gradient(trans = "log10")+ #log transform the data since skewed
+  theme_bw()
+```
+
+
+
+
