@@ -1,5 +1,5 @@
 ---
-title: "good_bad_plot"
+title: "Good Plot & Bad Plot"
 author: "Jonathan Huang"
 date: "`r Sys.Date()`"
 output:  
