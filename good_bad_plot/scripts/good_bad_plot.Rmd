@@ -77,7 +77,7 @@ songs_count <- songs %>%
 ## Bad Plot
 
 plot observed size distribution on 
-```{r}
+```{r bad_plot}
  ggplot(songs_count %>%
     mutate(tally = as.character( 1)) %>% group_by(reef_code,total_length, year) %>% tally())+
   annotation_custom(rasterGrob(kelp,
