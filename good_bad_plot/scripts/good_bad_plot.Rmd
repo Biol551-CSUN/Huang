@@ -1,0 +1,151 @@
+---
+title: "good_bad_plot"
+author: "Jonathan Huang"
+date: "`r Sys.Date()`"
+output:  
+   html_document:
+    toc: true 
+    toc_float: true
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,  #display code?
+                      message = FALSE, #display messages?
+                      warning = FALSE, #display 
+                      fig.path = "../output/")
+```
+
+# INTRODUCTION:
+
+Data visualization is commonly used by scientist to communicate results of experiment. To make a good plot, its should consider the following
+
+-   Data should be free of mistakes, correctly labeled with units, and scientifically sound observation and experimental design
+
+-   Graph should be clear, simple, and easy to understand. It should not clutter, emphesize specific data, clearly labeled distinct groups, logical color schemes
+
+-   Graph should responsibly represent the data and conclusion of the study. Should not have misleading axis or labels.
+
+------------------
+Load Libraries
+
+```{r}
+library(tidyverse)
+library(here)
+library(patchwork)
+library(ggpubr)
+library(png)
+library(jpeg)
+library(grid)
+library(ggimage)
+library(cowplot)
+library(magick)
+```
+
+Import Data
+
+```{r}
+# Our main survey data
+songs <- read.csv(here("good_bad_plot","data","songs_clean.csv"))
+
+#Add in image
+kelp <- png::readPNG(here("good_bad_plot","data","kelp.png"))
+
+imagefile <- png::readPNG(here("good_bad_plot","data","sheephead.png"))
+
+```
+
+set data to have individual counts
+
+```{r}
+songs_count <- songs %>% 
+  group_by( year,total_length, species_code, reef_code) %>%  #group analysis 
+  filter(species_code %in% "SEPU") %>% 
+  mutate(species_code = as_factor(factor(species_code,   #reorder the factors
+  levels = c( "SEPU","PACL","PANE","EMJA","CHPU","OXCA"))),
+  total_length = as.numeric(total_length), #change length to numeric
+  reef_code = as_factor(reef_code),
+  year = as_factor(year)) %>%    
+  summarise(count = sum(count), #sum the count through the years
+  total_area_sampled = sum(total_area_sampled)) %>%   
+  mutate(size_density = count/total_area_sampled) %>% 
+  uncount(count) %>%   #reorder so each row = 1 count
+  select(year, species_code,reef_code,total_length,total_area_sampled, size_density) #reorder df order
+
+```
+
+## Bad Plot
+
+plot observed size distribution on 
+```{r}
+ ggplot(songs_count %>%
+    mutate(tally = as.character( 1)) %>% group_by(reef_code,total_length, year) %>% tally())+
+  annotation_custom(rasterGrob(kelp,
+             width = unit(1,"npc"),
+  height = unit(1,"npc")),
+                    -Inf, Inf, -Inf, Inf) +
+  geom_point(mapping = aes(x =total_length, y = n,color = year))+
+  geom_image(mapping = aes(x =total_length, y = n,image = sample(here("good_bad_plot","data","sheephead.png"))), size = 0.1, alpha = 0.2)+
+  geom_line(mapping = aes(x = total_length, y = n, color = year, linetype = reef_code), alpha = 0.3, size = 1)+
+  xlim(c(0,max(songs_count$total_length)))+
+  xlab("Long fish")+
+  ylab("number count")
+  theme_bw()
+```
+
+
+
+## Good Plot
+
+Plot observed size distribution on artificial reef
+```{r}
+p1 <- ggplot(songs_count %>% filter(reef_code%in% "WNR"),    #data 
+       aes(x = total_length, color = year))+   #specify x & solor by year
+  geom_density(binwidth = 3)+  #use density plot
+    facet_wrap(~year, ncol = 1, scales = "free_y")+    #separate plots by species
+  scale_x_continuous(breaks = seq(0,75, 5),
+                     limits = c(0,75))+  #scale x to be max lenght at increment of 5cm
+    scale_y_continuous(breaks = seq(0,0.08, 0.03),
+                      limits = c(0,0.07) )+
+  labs(x = "Total Length (mm)",    #edit axis & legend labels
+       y = "frequency", 
+       color = "Year",
+       title = element_text("Size distribution on WNR"))+
+  scale_color_viridis_d()+  #color palatte
+  theme_classic()+
+  theme(panel.background = element_rect(fill = "grey96", color = "black"),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none",
+        panel.spacing = unit(0, "mm"),
+        strip.text = element_blank())
+ 
+```
+
+Plot observed size distribution on natural reefs
+```{r}
+p2 <- ggplot(songs_count %>% filter(reef_code%in% c("BK","SMK")),    #data 
+       aes(x = total_length, color = year))+   #specify x & solor by year
+  geom_density(binwidth = 3)+   #use frequency polygon
+  facet_wrap(~year, ncol = 1, scales = "free_y")+    #separate plots by species
+  scale_x_continuous(breaks = seq(0,max(songs$total_length), 5),
+                     limits = c(0,NA))+  #scale x to be max length
+    scale_y_continuous(breaks = seq(0,0.08, 0.03),
+                      limits = c(0,0.07) )+
+  labs(x = "Total Length (mm)",    #edit axis & legend labels
+       y = "frequency", 
+       color = "Year",
+       title = element_text("Size distribution on BK & SMK"))+
+  scale_color_viridis_d()+  #color palatte
+  theme_classic()+
+  theme(panel.background = element_rect(fill = "grey96", color = "black"),
+        plot.title = element_text(hjust = 0.5),
+        panel.spacing = unit(0, "mm"),
+        strip.text = element_blank())
+
+```
+
+Combine the two graphs into one
+```{r good_plot.png}
+ggarrange(p1+p2+rremove("ylab"), common.legend = TRUE, legend = "right")
+```
+
