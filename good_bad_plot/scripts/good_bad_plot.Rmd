@@ -26,6 +26,9 @@ Data visualization is commonly used by scientist to communicate results of exper
 
 -   Graph should responsibly represent the data and conclusion of the study. Should not have misleading axis or labels.
 
+# Background
+This assignment will use SONGS fish size and count monitoring dataset. The objective of graphs is to show the size distribution of California Sheephead at artifical reef sites compared to natural reef sites over time.
+
 ------------------
 Load Libraries
 
@@ -72,6 +75,7 @@ songs_count <- songs %>%
   uncount(count) %>%   #reorder so each row = 1 count
   select(year, species_code,reef_code,total_length,total_area_sampled, size_density) #reorder df order
 
+  
 ```
 
 ## Bad Plot
@@ -79,73 +83,102 @@ songs_count <- songs %>%
 plot observed size distribution on 
 ```{r bad_plot}
  ggplot(songs_count %>%
-    mutate(tally = as.character( 1)) %>% group_by(reef_code,total_length, year) %>% tally())+
+    mutate(tally = as.character( 1)) %>% #add a column to sum count
+      group_by(reef_code,total_length, year) %>% tally())+
+  #Add background image with ggimage
   annotation_custom(rasterGrob(kelp,
              width = unit(1,"npc"),
   height = unit(1,"npc")),
                     -Inf, Inf, -Inf, Inf) +
+  #add the geompoints 
   geom_point(mapping = aes(x =total_length, y = n,color = year))+
+  #replace geompoints with sheephead image
   geom_image(mapping = aes(x =total_length, y = n,image = sample(here("good_bad_plot","data","sheephead.png"))), size = 0.1, alpha = 0.2)+
+  #Add a line graph to show trends in size, color by year
   geom_line(mapping = aes(x = total_length, y = n, color = year, linetype = reef_code), alpha = 0.3, size = 1)+
+  #edit axis titles and limits
   xlim(c(0,max(songs_count$total_length)))+
   xlab("Long fish")+
-  ylab("number count")
-  theme_bw()
+  ylab("number count")+
+  #edit background
+  theme_bw()+
+  theme(plot.background = element_rect(fill = "aquamarine"))
 ```
 
+
+### This plot is bad because 
+
+- No title to describe what the graph is about
+
+- uninformative axis titles
+
+- uninformative legend, not specified what "reef_code" is
+
+- line graph shows raw numbers, when comparing two sites it is not a standarized way of looking at size distribution
+
+- Combining all the years and sites onto one graph, difficult to track changes
+
+- Color of the lines blend into the background, difficult to see. Palatte may not be colorblind friendly
+
+- Points are changed to fish images, which is distracting and uninformative on where the point is 
+
+- Aesthetic background to distract from from data - making it difficult to focus on the data
 
 
 ## Good Plot
 
-Plot observed size distribution on artificial reef
+#### Plot observed size distribution on artificial reef
 ```{r}
 p1 <- ggplot(songs_count %>% filter(reef_code%in% "WNR"),    #data 
-       aes(x = total_length, color = year))+   #specify x & solor by year
+       aes(x = total_length, fill = year))+   #specify x & solor by year
   geom_density(binwidth = 3)+  #use density plot
     facet_wrap(~year, ncol = 1, scales = "free_y")+    #separate plots by species
   scale_x_continuous(breaks = seq(0,75, 5),
                      limits = c(0,75))+  #scale x to be max lenght at increment of 5cm
-    scale_y_continuous(breaks = seq(0,0.08, 0.03),
-                      limits = c(0,0.07) )+
+    scale_y_continuous(breaks = seq(0,0.08, 0.05),
+                      limits = c(0,0.07) )+ #scale y tick mark
   labs(x = "Total Length (mm)",    #edit axis & legend labels
-       y = "frequency", 
-       color = "Year",
-       title = element_text("Size distribution on WNR"))+
-  scale_color_viridis_d()+  #color palatte
+       y = "Density", 
+       fill = "Year",
+       title = element_text("Artificial Reef"))+
+  scale_fill_viridis_d(option = "mako")+  #color palatte
   theme_classic()+
   theme(panel.background = element_rect(fill = "grey96", color = "black"),
         plot.title = element_text(hjust = 0.5),
         legend.position = "none",
-        panel.spacing = unit(0, "mm"),
+        panel.spacing = unit(1, "mm"),
         strip.text = element_blank())
  
 ```
 
-Plot observed size distribution on natural reefs
+#### Plot observed size distribution on natural reefs
 ```{r}
 p2 <- ggplot(songs_count %>% filter(reef_code%in% c("BK","SMK")),    #data 
-       aes(x = total_length, color = year))+   #specify x & solor by year
+       aes(x = total_length, fill = year))+   #specify x & solor by year
   geom_density(binwidth = 3)+   #use frequency polygon
   facet_wrap(~year, ncol = 1, scales = "free_y")+    #separate plots by species
   scale_x_continuous(breaks = seq(0,max(songs$total_length), 5),
                      limits = c(0,NA))+  #scale x to be max length
-    scale_y_continuous(breaks = seq(0,0.08, 0.03),
-                      limits = c(0,0.07) )+
+    scale_y_continuous(breaks = seq(0,0.08, 0.05),
+                      limits = c(0,0.07) )+ #scale y tick mark
   labs(x = "Total Length (mm)",    #edit axis & legend labels
-       y = "frequency", 
-       color = "Year",
-       title = element_text("Size distribution on BK & SMK"))+
-  scale_color_viridis_d()+  #color palatte
+       y = "Density", 
+       fill = "Year",
+       title = element_text("Natrual Reef"))+
+  scale_fill_viridis_d(option = "mako")+  #color palatte
   theme_classic()+
   theme(panel.background = element_rect(fill = "grey96", color = "black"),
         plot.title = element_text(hjust = 0.5),
-        panel.spacing = unit(0, "mm"),
+        panel.spacing = unit(1, "mm"),
         strip.text = element_blank())
 
 ```
 
-Combine the two graphs into one
+#### Combine the two graphs into one
 ```{r good_plot.png}
-ggarrange(p1+p2+rremove("ylab"), common.legend = TRUE, legend = "right")
+#combine both plots
+combined <- ggarrange(p1+p2+rremove("ylab"), common.legend = TRUE, legend = "right")
+#add title at the top of the graph
+annotate_figure(combined, top = text_grob("Size Distrbution of California Sheephead", face = "bold", size = 14))
 ```
 
