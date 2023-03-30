@@ -133,7 +133,7 @@ p1 <- ggplot(songs_count %>% filter(reef_code%in% "WNR"),    #data
        aes(x = total_length, fill = year))+   #specify x & solor by year
   geom_density(binwidth = 3)+  #use density plot
     facet_wrap(~year, ncol = 1, scales = "free_y")+    #separate plots by species
-  scale_x_continuous(breaks = seq(0,75, 5),
+  scale_x_continuous(breaks = seq(0,75, 10),
                      limits = c(0,75))+  #scale x to be max lenght at increment of 5cm
     scale_y_continuous(breaks = seq(0,0.08, 0.05),
                       limits = c(0,0.07) )+ #scale y tick mark
@@ -157,7 +157,7 @@ p2 <- ggplot(songs_count %>% filter(reef_code%in% c("BK","SMK")),    #data
        aes(x = total_length, fill = year))+   #specify x & solor by year
   geom_density(binwidth = 3)+   #use frequency polygon
   facet_wrap(~year, ncol = 1, scales = "free_y")+    #separate plots by species
-  scale_x_continuous(breaks = seq(0,max(songs$total_length), 5),
+  scale_x_continuous(breaks = seq(0,max(songs$total_length), 10),
                      limits = c(0,NA))+  #scale x to be max length
     scale_y_continuous(breaks = seq(0,0.08, 0.05),
                       limits = c(0,0.07) )+ #scale y tick mark
@@ -182,3 +182,12 @@ combined <- ggarrange(p1+p2+rremove("ylab"), common.legend = TRUE, legend = "rig
 annotate_figure(combined, top = text_grob("Size Distrbution of California Sheephead", face = "bold", size = 14))
 ```
 
+### This plot is good because:
+
+- Clear title and axis label to show what the plot is describing
+
+- Separated plots by site, by year with same axis to easily compare between them
+
+- Contrasting color palatte from background, with varying color that won't be conflicting for colorblind
+
+- Density plot for standardized comparison of data
