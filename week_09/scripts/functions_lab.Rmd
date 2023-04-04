@@ -1,0 +1,112 @@
+---
+title: "Good Plot & Bad Plot"
+author: "Jonathan Huang"
+date: "`r Sys.Date()`"
+output:  
+   html_document:
+    toc: true 
+    toc_float: true
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,  #display code?
+                      message = FALSE, #display messages?
+                      warning = FALSE, #display 
+                      fig.path = "../output/")
+```
+
+## load library
+```{r}
+library(tidyverse)
+library(here)
+library(palmerpenguins)
+
+```
+
+## read in data
+```{r}
+view(penguins)
+songs <- read_csv(here("week_09","data","songs_clean.csv")) %>% drop_na()
+glimpse(songs)
+```
+
+## function to get the summary
+ - summary total or by group
+```{r}
+
+mm_to_m <- function(x){
+  a <- x/1000
+  return(a)
+}
+
+#example with songs dataset
+
+songs %>%mutate( #mutate column
+     add= mm_to_m(total_length))
+
+#example with palmer penguin dataset
+penguins %>%drop_na() %>% 
+  rename(bill_length_m = bill_length_mm) %>% 
+  mutate(
+  bill_length_m = mm_to_m(bill_length_m) 
+) 
+  
+```
+
+
+# funtion to plot
+```{r}
+myplot <- function(data = penguins,x,y, points) {if(points == "a"){
+
+  # plot with points based on data
+  ggplot(data,
+         aes(x = {{x}},
+             y = {{y}},
+             color = island))+
+    geom_point(aes(size = {{y}}))+
+    geom_smooth(method = "lm")+
+    theme_bw()
+}else{if(points == "b"){ # plot with points based on a fixed size
+    ggplot(data,
+         aes(x = {{x}},
+             y = {{y}},
+             color = island))+
+    geom_point(size = 2)+
+    geom_smooth(method = "lm")+
+    theme_bw()
+}else{ if(points == "c"){ # plot with transparent point
+    ggplot(data,
+         aes(x = {{x}},
+             y = {{y}},
+             color = island))+
+    geom_point(alpha = 0.5)+
+    geom_smooth(method = "lm")+
+    theme_bw()
+}
+}
+}
+}
+```
+
+# Plotting plot variations
+## plot with points from data
+```{r points_from_data}
+penguins %>% drop_na() %>% 
+myplot(x = body_mass_g,
+       y = bill_length_mm, points = "a")
+```
+
+## plot with points with fized size
+```{r points_fixed_size}
+penguins %>% drop_na() %>% 
+myplot(x = body_mass_g,
+       y = bill_length_mm, points = "b")
+```
+## plot with a fixed transparency
+```{r points_alpha_fixed}
+penguins %>% drop_na() %>% 
+myplot(x = body_mass_g,
+       y = bill_length_mm, points = "c")
+```
+
