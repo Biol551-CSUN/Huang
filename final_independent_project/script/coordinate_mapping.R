@@ -40,7 +40,7 @@ smk <- transect %>% filter(reef_name%in% "SMK")
 # Create a color palette with handmade bins.
 mybins <- c("WNR","BK","SMK")
 myphase <- c("1","2","3")
-mypalette <- colorFactor( palette=c("green","aquamarine","darkgreen"), 
+mypalette <- colorFactor( palette=c("lightgreen","aquamarine","darkseagreen"), 
                        domain=transect$phase_code, #use phase_built_code
                        na.color="transparent") # if not on color palette, make transparent
 
