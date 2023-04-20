@@ -90,7 +90,8 @@ $,[],{}
 vals<-c("a.b", "b.c","c.d")
 vals
 
-str_replace(vals, "\\." ," ")
+str_replace(vals, "\\." , #replace "."
+            " ") # with a space
 
 #stringr only replace the first instence of each case
 vals<-c("a.b.c", "b.c.d","c.d.e")
