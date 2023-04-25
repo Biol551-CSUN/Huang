@@ -1608,17 +1608,18 @@ hwdir &lt;- dir(hwpath,
             sd_temp = sd(Temp.C, na.rm = TRUE), #sd temo
             avg_light = mean(Intensity.lux, na.rm = TRUE), #mean light intensity
             sd_light = sd(Intensity.lux, na.rm = TRUE)) %&gt;%  #sd light intensity
-  mutate(filename = str_sub(filename, start = -7,end = -1)) #extract only filename, not file path
+  # mutate(filename = str_sub(filename, start = -7,end = -5)) %&gt;%  #extract only filename, not file path
+  mutate(filename = str_trim(str_extract_all(filename, &quot;[T][P][1-9]{1,4}&quot;)))
   
 
 print(hw)</code></pre>
 <pre><code>## # A tibble: 4 × 5
 ##   filename avg_temp sd_temp avg_light sd_light
 ##   &lt;chr&gt;       &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 TP1.csv      13.3    2.32      427.    1661.
-## 2 TP2.csv      13.2    2.31     5603.   11929.
-## 3 TP3.csv      13.1    2.32     5605.   12101.
-## 4 TP4.csv      13.2    2.27      655.    2089.</code></pre>
+## 1 TP1          13.3    2.32      427.    1661.
+## 2 TP2          13.2    2.31     5603.   11929.
+## 3 TP3          13.1    2.32     5605.   12101.
+## 4 TP4          13.2    2.27      655.    2089.</code></pre>
 </div>
 </div>
 

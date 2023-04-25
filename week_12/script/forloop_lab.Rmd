@@ -109,7 +109,8 @@ hw <- hwdir %>%
             sd_temp = sd(Temp.C, na.rm = TRUE), #sd temo
             avg_light = mean(Intensity.lux, na.rm = TRUE), #mean light intensity
             sd_light = sd(Intensity.lux, na.rm = TRUE)) %>%  #sd light intensity
-  mutate(filename = str_sub(filename, start = -7,end = -1)) #extract only filename, not file path
+  # mutate(filename = str_sub(filename, start = -7,end = -5)) %>%  #extract only filename, not file path
+  mutate(filename = str_trim(str_extract_all(filename, "[T][P][1-9]{1,4}")))
   
 
 print(hw)
