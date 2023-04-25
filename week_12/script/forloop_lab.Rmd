@@ -1,0 +1,118 @@
+---
+title: "Iterative_coding"
+author: "Jonathan Huang"
+date: "`r Sys.Date()`"
+output:  
+   html_document:
+    toc: true 
+    toc_float: true
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,  #display code?
+                      message = FALSE, #display messages?
+                      warning = FALSE, #display 
+                      fig.path = "../output/")
+```
+
+# Load libraries
+```{r}
+library(tidyverse)
+library(here)
+```
+
+# for loop 
+
+### set directory
+```{r}
+#check headings
+hwdata <- read_csv(here("week_12","data","homework","TP1.csv"))
+glimpse(hwdata)
+
+# set file path
+hwpath <- here("week_12","data","homework")
+
+# specify directory to file
+hwfile <- dir(path = hwpath, #set path
+              pattern = ".csv") #pattern to look for in file titles
+hwfile #look at file names
+
+```
+
+
+
+### Import and Calculate means
+#### Make a empty matrix
+```{r}
+empty_matrix <- data.frame(matrix(nrow = length(hwfile), #empty file with rows equal to # of files
+                                  ncol = 5))
+colnames(empty_matrix) <- c("filename","avg_temp","sd_temp","avg_light","sd_light")
+```
+
+#### Write basic code to put into for loop
+```{r}
+# read in raw data
+hw_data <- read_csv(paste0(hwpath, #directory - not with individiual file
+                           "/", # separate by /
+                           hwfile[1]))  # individual file name
+
+#calculate mean of file - use names of columns you named
+avg_temp <- mean(hw_data$Temp.C, na.rm = TRUE)
+sd_temp <- sd(hw_data$Temp.C, na.rm = TRUE)
+avg_light <- mean(hw_data$Intensity.lux, na.rm = TRUE)
+sd_light <- sd(hw_data$Intensity.lux, na.rm = TRUE)
+```
+
+
+#### Write for loop
+```{r}
+for (i in 1:length(hwfile)) { #loop for every file named in hwfile
+  #read in data
+  hw_data <- read_csv(paste0(hwpath, #directory - not with individiual file
+                           "/", # separate by /
+                           hwfile[i]))  # individual file name
+  
+empty_matrix$filename[i] <- hwfile[i] #put down file names
+empty_matrix$avg_temp[i] <- mean(hw_data$Temp.C, na.rm = TRUE) # add to comumn for mean temp of every file
+empty_matrix$sd_temp[i] <- sd(hw_data$Temp.C, na.rm = TRUE)# add to comumn for sd temp of every file
+empty_matrix$avg_light[i] <- mean(hw_data$Intensity.lux, na.rm = TRUE) # add to comumn for mean light intensity of every file
+empty_matrix$sd_light[i] <- sd(hw_data$Intensity.lux, na.rm = TRUE)# add to comumn for sd light intensity of every file
+  
+}
+
+print(empty_matrix)
+```
+
+
+# Purrrr map function
+
+#### set file path
+```{r}
+hwpath <- here("week_12","data","homework") #path within the folders
+
+#set file directory 
+hwdir <- dir(hwpath,
+             pattern = ".csv", #look inside path for .csv files
+             full.names = TRUE)
+```
+
+#### bring in files and summarize by file
+
+```{r}
+hw <- hwdir %>% 
+  set_names() %>% # set file names as id
+  map_df(read_csv, #funstion - read csv files
+         .id = "filename") %>%  #make a column with file name 
+  group_by(filename) %>%  #summarize by file name
+  summarise(avg_temp = mean(Temp.C,na.rm = TRUE), #mean temp
+            sd_temp = sd(Temp.C, na.rm = TRUE), #sd temo
+            avg_light = mean(Intensity.lux, na.rm = TRUE), #mean light intensity
+            sd_light = sd(Intensity.lux, na.rm = TRUE)) %>%  #sd light intensity
+  mutate(filename = str_sub(filename, start = -7,end = -1)) #extract only filename, not file path
+  
+
+print(hw)
+  
+```
+
